@@ -49,22 +49,20 @@ async function main() {
                                         console.log(`Line ${ Track.vonal_id } started at (${ Route.ora }:${ Route.perc }) is being ${keses_sietes[parseInt(curr.utolso_megallo_sorszam) - 1]} secs late.`)
                                         keses_sietes[parseInt(curr.utolso_megallo_sorszam) - 1] = parseInt(curr.keses_sietes);
 
-                                        const l = pool.query(`SELECT COUNT(*) as count FROM kesesek WHERE jarat_id = ? AND megallo_id = ?`, [ Track.vonal_id, Stops[parseInt(curr.utolso_megallo_sorszam) - 1].megallo_id ])
+                                        const l = await pool.query(`SELECT COUNT(*) as count FROM kesesek WHERE jarat_id = ? AND megallo_id = ?`, [ Track.vonal_id, Stops[parseInt(curr.utolso_megallo_sorszam) - 1].megallo_id ]) as any
                                         
-                                        if (l[0].count == 0) {
+                                        if (l[0][0].count == 0) {
                                             pool.query('INSERT INTO `kesesek` (jarat_id, jarat_nev, megallo_id, megallo_nev, keses) VALUES(?, ?, ?, ?, ?)', [
                                                 Route.jarat_id, Track.vonal_id, Stops[parseInt(curr.utolso_megallo_sorszam) - 1].megallo_id, Stops[parseInt(curr.utolso_megallo_sorszam) - 1].megallo_nev, parseInt(curr.keses_sietes)
                                             ])
                                         } else {
-                                            pool.query('UPDATE `kesesek` WHERE jarat_id = ? AND megallo_id = ? SET keses = ?', [
+                                            pool.query('UPDATE `kesesek` SET keses = ? WHERE jarat_id = ? AND megallo_id = ?', [
                                                 Route.jarat_id, Stops[parseInt(curr.utolso_megallo_sorszam) - 1].megallo_id, parseInt(curr.keses_sietes)
                                             ])
                                         }
                                     }
                                 } catch(e) {
-                                    console.error(e)
-                                    clearInterval(a)
-                                    console.log("Source: " + Track.vonal_id, '\n', curr)
+                                    console.log("E, Source: " + Track.vonal_id, '\n', curr)
                                 }
                             }, 10000)
                         }, new Date(`${currentTime.getFullYear()}. ${ currentTime.getMonth() + 1 }. ${ currentTime.getDate() } ${ Route.indul }`).getTime() - new Date().getTime())
