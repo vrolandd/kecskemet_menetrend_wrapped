@@ -47,17 +47,18 @@ async function main() {
                                         console.log(`Line ${ Track.vonal_id } ended, being ${ keses_sietes.reduce(function (a, b) { return a + b; }, 0) }`)
                                     } else {
                                         console.log(`Line ${ Track.vonal_id } started at (${ Route.ora }:${ Route.perc }) is being ${keses_sietes[parseInt(curr.utolso_megallo_sorszam) - 1]} secs late.`)
-                                        keses_sietes[parseInt(curr.utolso_megallo_sorszam) - 1] = parseInt(curr.keses_sietes);
+                                        keses_sietes[parseInt(curr.utolso_megallo_sorszam)] = parseInt(curr.keses_sietes)
 
-                                        const l = await pool.query(`SELECT COUNT(*) as count FROM kesesek WHERE jarat_id = ? AND megallo_id = ?`, [ Track.vonal_id, Stops[parseInt(curr.utolso_megallo_sorszam) - 1].megallo_id ]) as any
-                                        
+                                        const l = await pool.query(`SELECT COUNT(*) as count FROM kesesek WHERE jarat_id = ? AND megallo_id = ?`, [ Route.jarat_id, Stops[parseInt(curr.utolso_megallo_sorszam) - 1].megallo_id ]) as any
+					                    console.log(l[0][0].count, Track.vonal_id, Stops[parseInt(curr.utolso_megallo_sorszam) - 1].megallo_id)
+
                                         if (l[0][0].count == 0) {
                                             pool.query('INSERT INTO `kesesek` (jarat_id, jarat_nev, megallo_id, megallo_nev, keses) VALUES(?, ?, ?, ?, ?)', [
-                                                Route.jarat_id, Track.vonal_id, Stops[parseInt(curr.utolso_megallo_sorszam) - 1].megallo_id, Stops[parseInt(curr.utolso_megallo_sorszam) - 1].megallo_nev, parseInt(curr.keses_sietes)
+                                                Route.jarat_id, Track.vonal_id, Stops[parseInt(curr.utolso_megallo_sorszam) - 1].megallo_id, Stops[parseInt(curr.utolso_megallo_sorszam) - 1].megallo_nev, keses_sietes[parseInt(curr.utolso_megallo_sorszam) - 1]
                                             ])
                                         } else {
                                             pool.query('UPDATE `kesesek` SET keses = ? WHERE jarat_id = ? AND megallo_id = ?', [
-                                                Route.jarat_id, Stops[parseInt(curr.utolso_megallo_sorszam) - 1].megallo_id, parseInt(curr.keses_sietes)
+                                                keses_sietes[parseInt(curr.utolso_megallo_sorszam) - 1], Route.jarat_id, Stops[parseInt(curr.utolso_megallo_sorszam)].megallo_id
                                             ])
                                         }
                                     }
